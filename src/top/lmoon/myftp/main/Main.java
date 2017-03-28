@@ -68,9 +68,7 @@ public class Main {
 	private static Map<String,String> getValuesMapFromArgs(String[] args){
 		Map<String,String> map = new HashMap<String,String>();
 		if (args != null && args.length > 0) {
-			for(int i=0;i<args.length;i++){
-//				logger.debug(args[i]);
-//				System.out.println(args[i]);
+			for(int i=1;i<args.length;i++){
 				if(!args[i].startsWith(PREFIX)){
 					if(PREFIX_ADMIN_PASSWORD.equals(args[i-1])){
 						String pswMd5 = MD5Util.getMD5(args[i]);
