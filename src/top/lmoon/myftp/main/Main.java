@@ -1,6 +1,8 @@
 package top.lmoon.myftp.main;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
@@ -22,21 +24,19 @@ public class Main {
 	private static final Logger logger = Logger.getLogger(Main.class);
 	
 	private static final String USERS_PROPERTIES_PATH = "./res/conf/users.properties";
-	private static final String ADMIN_PASSWORD_KEY = "ftpserver.user.admin.userpassword=";
+	private static final String KEY_ADMIN_PASSWORD = "ftpserver.user.admin.userpassword=";
+	private static final String KEY_ADMIN_DIRECTORY = "ftpserver.user.admin.homedirectory=";
+	private static final String PREFIX = "-";
+	private static final String PREFIX_ADMIN_PASSWORD = PREFIX + "p";
+	private static final String PREFIX_ADMIN_DIRECTORY = PREFIX + "d";
 
 	public static void main(String[] args) {
 		try {
-			if (args != null && args.length > 0) {
-				String psw = args[0].trim();
-				if (!psw.isEmpty()) {
-					String pswMd5 = MD5Util.getMD5(psw);
-					if(StringUtil.isNotNullOrEmpty(pswMd5)){
-						String temp = FileUtil.readFileAndReplaceValue(USERS_PROPERTIES_PATH, ADMIN_PASSWORD_KEY, pswMd5);
-						if(StringUtil.isNotNullOrEmpty(temp)){
-							FileUtil.writeFile(temp, USERS_PROPERTIES_PATH);
-						}
-					}
-
+			Map<String,String> valueMap = getValuesMapFromArgs(args);
+			if(valueMap!=null&&!valueMap.isEmpty()){
+				String temp = FileUtil.readFileAndReplaceValues(USERS_PROPERTIES_PATH, valueMap);
+				if(StringUtil.isNotNullOrEmpty(temp)){
+					FileUtil.writeFile(temp, USERS_PROPERTIES_PATH);
 				}
 			}
 
@@ -63,6 +63,29 @@ public class Main {
 			logger.error("出错了：", e);
 		}
 
+	}
+	
+	private static Map<String,String> getValuesMapFromArgs(String[] args){
+		Map<String,String> map = new HashMap<String,String>();
+		if (args != null && args.length > 0) {
+			for(int i=0;i<args.length;i++){
+//				logger.debug(args[i]);
+//				System.out.println(args[i]);
+				if(!args[i].startsWith(PREFIX)){
+					if(PREFIX_ADMIN_PASSWORD.equals(args[i-1])){
+						String pswMd5 = MD5Util.getMD5(args[i]);
+						if(StringUtil.isNotNullOrEmpty(pswMd5)){
+							map.put(KEY_ADMIN_PASSWORD, pswMd5);
+						}
+					}else if(PREFIX_ADMIN_DIRECTORY.equals(args[i-1])){
+						map.put(KEY_ADMIN_DIRECTORY, args[i]);
+					}
+				}
+				
+			}
+			
+		}
+		return map;
 	}
 
 }
